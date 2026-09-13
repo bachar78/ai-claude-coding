@@ -38,7 +38,7 @@ We will create a new branch for every feature/fix. Name branch **feature/[featur
 
 ## When Stuck
 
-- If something isn't working after 2-3 attempts, stop and explain the issue
+- If something isn't working after 2-3 attempts, then stop and explain the issue
 - Don't keep trying random fixes
 - Ask for clarification if requirements are unclear
 
