@@ -1,6 +1,6 @@
 # Current Feature
 
-<!-- Feature Name -->
+<!-- Feature Name and short description-->
 
 ## Status
 
