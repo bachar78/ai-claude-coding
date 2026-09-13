@@ -6,7 +6,7 @@
 - Explain non-obvious decisions briefly
 - Ask before large refactors or architectural changes
 - Don't add features not in the project spec
-- Never delete files without clarification
+- Never delete files without clarification of the reasons 
 
 ## Workflow
 
