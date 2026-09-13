@@ -561,6 +561,13 @@ GET    /api/export?format=json|zip
 
 Modern, minimal, developer-focused. Dark by default, light optional. Clean typography, generous whitespace, subtle borders and shadows. References: **Linear** (density + keyboard), **Raycast** (command palette + speed), **Notion** (editor feel).
 
+### Screenshot
+
+Refer to the screenshots below as a base for the dashboard UI. It does not have to be exact. Use it as a reference.
+
+- [Dashboard — main](screenshots/dashboard-ui-main.png)
+- [Dashboard — item drawer](screenshots/dashboard-ui-drawer.png)
+
 ### 9.2 Layout
 
 ```
