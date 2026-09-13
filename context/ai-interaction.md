@@ -10,7 +10,7 @@
 
 ## Workflow
 
-This is the common workflow that we will use for every single feature/fix:
+This is the common workflow that we will use for every single feature or fix:
 
 1. **Document** - Document the feature in @context/current-feature.md.
 2. **Branch** - Create new branch for feature, fix, etc
