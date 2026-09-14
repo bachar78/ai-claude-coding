@@ -64,6 +64,12 @@ export const itemTypes: MockItemType[] = [
   { id: "type_image", name: "Image", slug: "images", contentType: "FILE", icon: "Image", color: "#ec4899", isProOnly: true },
 ];
 
+const itemTypeById = new Map(itemTypes.map((type) => [type.id, type]));
+
+export function getItemTypeById(id: string): MockItemType | undefined {
+  return itemTypeById.get(id);
+}
+
 export const collections: MockCollection[] = [
   {
     id: "col_react",
