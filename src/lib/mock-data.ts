@@ -26,6 +26,7 @@ export interface MockCollection {
   itemCount: number;
   itemTypeIds: string[];
   defaultTypeId: string | null;
+  updatedAt: string;
 }
 
 export interface MockItem {
@@ -72,6 +73,7 @@ export const collections: MockCollection[] = [
     itemCount: 24,
     itemTypeIds: ["type_snippet", "type_note"],
     defaultTypeId: "type_snippet",
+    updatedAt: "2026-09-12T16:20:00.000Z",
   },
   {
     id: "col_ai",
@@ -81,6 +83,7 @@ export const collections: MockCollection[] = [
     itemCount: 18,
     itemTypeIds: ["type_prompt"],
     defaultTypeId: "type_prompt",
+    updatedAt: "2026-09-13T08:45:00.000Z",
   },
   {
     id: "col_shell",
@@ -90,6 +93,7 @@ export const collections: MockCollection[] = [
     itemCount: 31,
     itemTypeIds: ["type_command"],
     defaultTypeId: "type_command",
+    updatedAt: "2026-09-11T19:05:00.000Z",
   },
   {
     id: "col_interview",
@@ -99,6 +103,7 @@ export const collections: MockCollection[] = [
     itemCount: 12,
     itemTypeIds: ["type_note"],
     defaultTypeId: "type_note",
+    updatedAt: "2026-08-22T12:30:00.000Z",
   },
   {
     id: "col_reading",
@@ -108,6 +113,7 @@ export const collections: MockCollection[] = [
     itemCount: 9,
     itemTypeIds: ["type_link"],
     defaultTypeId: "type_link",
+    updatedAt: "2026-09-05T10:00:00.000Z",
   },
   {
     id: "col_design",
@@ -117,6 +123,7 @@ export const collections: MockCollection[] = [
     itemCount: 7,
     itemTypeIds: ["type_image"],
     defaultTypeId: "type_image",
+    updatedAt: "2026-07-30T09:00:00.000Z",
   },
   {
     id: "col_boilerplates",
@@ -126,6 +133,7 @@ export const collections: MockCollection[] = [
     itemCount: 15,
     itemTypeIds: ["type_file"],
     defaultTypeId: "type_file",
+    updatedAt: "2026-07-15T14:00:00.000Z",
   },
   {
     id: "col_postgres",
@@ -135,6 +143,7 @@ export const collections: MockCollection[] = [
     itemCount: 6,
     itemTypeIds: ["type_note", "type_link"],
     defaultTypeId: "type_note",
+    updatedAt: "2026-09-08T15:25:00.000Z",
   },
 ];
 

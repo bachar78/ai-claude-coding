@@ -1,17 +1,22 @@
-import { TopBar } from "@/components/dashboard/TopBar";
+import { cookies } from "next/headers";
 
-export default function DashboardLayout({
+import { AppSidebar } from "@/components/dashboard/AppSidebar";
+import { TopBar } from "@/components/dashboard/TopBar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+
+export default async function DashboardLayout({
   children,
 }: LayoutProps<"/dashboard">) {
+  const cookieStore = await cookies();
+  const defaultOpen = cookieStore.get("sidebar_state")?.value !== "false";
+
   return (
-    <div className="flex h-dvh flex-col">
-      <TopBar />
-      <div className="flex min-h-0 flex-1">
-        <aside className="w-64 shrink-0 border-r p-4">
-          <h2 className="text-lg font-semibold">Sidebar</h2>
-        </aside>
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
-      </div>
-    </div>
+    <SidebarProvider defaultOpen={defaultOpen} className="h-dvh">
+      <AppSidebar />
+      <SidebarInset className="min-w-0">
+        <TopBar />
+        <div className="min-h-0 flex-1 overflow-y-auto p-6">{children}</div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
