@@ -8,7 +8,8 @@ interface DashboardSectionProps {
   title: string;
   count: number;
   viewAllHref: string;
-  emptyMessage: string;
+  /** Omit to hide the whole section while it is empty. */
+  emptyMessage?: string;
   children: ReactNode;
 }
 
@@ -19,6 +20,8 @@ export function DashboardSection({
   emptyMessage,
   children,
 }: DashboardSectionProps) {
+  if (count === 0 && !emptyMessage) return null;
+
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">

@@ -1,10 +1,4 @@
-/** The fields an item type contributes to a card: its icon badge and accent color. */
-export interface ItemTypeBadge {
-  id: string;
-  name: string;
-  icon: string;
-  color: string;
-}
+import type { ItemTypeBadge } from "@/types/item-type";
 
 /** A collection as the dashboard grid renders it. */
 export interface CollectionSummary {

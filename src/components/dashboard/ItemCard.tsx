@@ -3,10 +3,10 @@ import { Pin, Star } from "lucide-react";
 
 import { TypeIconBadge } from "@/components/dashboard/TypeIconBadge";
 import { Badge } from "@/components/ui/badge";
-import { getItemTypeById, type MockItem } from "@/lib/mock-data";
+import type { ItemSummary } from "@/types/item";
 
 interface ItemCardProps {
-  item: MockItem;
+  item: ItemSummary;
 }
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -16,15 +16,15 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 });
 
 export function ItemCard({ item }: ItemCardProps) {
-  const type = getItemTypeById(item.itemTypeId);
+  const { type } = item;
 
   return (
     <article
-      style={{ "--type-color": type?.color } as CSSProperties}
+      style={{ "--type-color": type.color } as CSSProperties}
       className="flex flex-col gap-3 rounded-xl border border-l-2 border-l-(color:--type-color) bg-card p-4 transition-colors hover:border-foreground/20 hover:border-l-(color:--type-color)"
     >
       <div className="flex items-start gap-3">
-        {type && <TypeIconBadge type={type} />}
+        <TypeIconBadge type={type} />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <div className="flex items-center gap-1.5">
             <h3 className="truncate font-medium">{item.title}</h3>
@@ -32,9 +32,11 @@ export function ItemCard({ item }: ItemCardProps) {
               <Pin className="size-3.5 shrink-0 text-muted-foreground" />
             )}
           </div>
-          <p className="line-clamp-2 text-sm text-muted-foreground">
-            {item.description}
-          </p>
+          {item.description && (
+            <p className="line-clamp-2 text-sm text-muted-foreground">
+              {item.description}
+            </p>
+          )}
         </div>
         {item.isFavorite && (
           <Star className="size-4 shrink-0 fill-yellow-400 text-yellow-400" />
@@ -49,10 +51,10 @@ export function ItemCard({ item }: ItemCardProps) {
           ))}
         </div>
         <time
-          dateTime={item.updatedAt}
+          dateTime={item.updatedAt.toISOString()}
           className="shrink-0 text-xs text-muted-foreground"
         >
-          {dateFormatter.format(new Date(item.updatedAt))}
+          {dateFormatter.format(item.updatedAt)}
         </time>
       </div>
     </article>
