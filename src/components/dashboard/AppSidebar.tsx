@@ -1,5 +1,6 @@
+import type { CSSProperties } from "react";
 import Link from "next/link";
-import { ChevronRight, Folder, Lock, Settings, Star, Zap } from "lucide-react";
+import { ChevronRight, Lock, Settings, Star, Zap } from "lucide-react";
 
 import { SidebarCollapseButton } from "@/components/dashboard/SidebarCollapseButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -22,27 +23,33 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { getItemTypeIcon } from "@/lib/item-type-icons";
 import {
-  collections,
-  currentUser,
-  items,
-  itemTypes,
-  type MockCollection,
-} from "@/lib/mock-data";
+  getFavoriteCollections,
+  getRecentCollections,
+} from "@/lib/db/collections";
+import { getItemTypesWithCounts } from "@/lib/db/items";
+import { getCurrentUser } from "@/lib/db/user";
+import { getItemTypeIcon, NEUTRAL_TYPE_COLOR } from "@/lib/item-type-icons";
 import { getInitials } from "@/lib/utils";
+import type { CollectionSummary } from "@/types/collection";
 
 const RECENT_COLLECTIONS_LIMIT = 5;
 
-const typeColorById = new Map(itemTypes.map((type) => [type.id, type.color]));
-
-function countItemsByType(typeId: string): number {
-  return items.filter((item) => item.itemTypeId === typeId).length;
+/** The dominant item type of a collection, as a dot in the icon slot. */
+function CollectionDot({ color }: { color: string }) {
+  return (
+    <span className="flex size-4 shrink-0 items-center justify-center">
+      <span
+        style={{ "--type-color": color } as CSSProperties}
+        className="size-2 rounded-full bg-(color:--type-color)"
+      />
+    </span>
+  );
 }
 
 interface CollectionListProps {
   label: string;
-  collections: MockCollection[];
+  collections: CollectionSummary[];
   isFavorites?: boolean;
 }
 
@@ -63,12 +70,8 @@ function CollectionList({ label, collections, isFavorites }: CollectionListProps
               {isFavorites ? (
                 <Star className="fill-yellow-400 text-yellow-400" />
               ) : (
-                <Folder
-                  color={
-                    collection.defaultTypeId
-                      ? typeColorById.get(collection.defaultTypeId)
-                      : undefined
-                  }
+                <CollectionDot
+                  color={collection.accentType?.color ?? NEUTRAL_TYPE_COLOR}
                 />
               )}
               <span>{collection.name}</span>
@@ -83,11 +86,16 @@ function CollectionList({ label, collections, isFavorites }: CollectionListProps
   );
 }
 
-export function AppSidebar() {
-  const favoriteCollections = collections.filter((c) => c.isFavorite);
-  const recentCollections = [...collections]
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
-    .slice(0, RECENT_COLLECTIONS_LIMIT);
+export async function AppSidebar() {
+  const user = await getCurrentUser();
+  const [itemTypes, favoriteCollections, recentCollections] = await Promise.all([
+    user ? getItemTypesWithCounts(user.id) : [],
+    user ? getFavoriteCollections(user.id) : [],
+    user ? getRecentCollections(user.id, RECENT_COLLECTIONS_LIMIT) : [],
+  ]);
+
+  const isPro = user?.plan === "PRO";
+  const displayName = user?.name ?? user?.email ?? "";
 
   return (
     <Sidebar collapsible="icon">
@@ -117,7 +125,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {itemTypes.map((type) => {
                 const Icon = getItemTypeIcon(type.icon);
-                const isLocked = type.isProOnly && currentUser.plan === "FREE";
+                const isLocked = type.isProOnly && !isPro;
 
                 return (
                   <SidebarMenuItem key={type.id}>
@@ -129,11 +137,7 @@ export function AppSidebar() {
                       <span>{type.name}</span>
                     </SidebarMenuButton>
                     <SidebarMenuBadge className="text-muted-foreground">
-                      {isLocked ? (
-                        <Lock className="size-3.5" />
-                      ) : (
-                        countItemsByType(type.id)
-                      )}
+                      {isLocked ? <Lock className="size-3.5" /> : type.itemCount}
                     </SidebarMenuBadge>
                   </SidebarMenuItem>
                 );
@@ -165,33 +169,46 @@ export function AppSidebar() {
                   label="Recent"
                   collections={recentCollections}
                 />
+                <SidebarMenu className="pt-1">
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      render={<Link href="/collections" />}
+                      className="text-muted-foreground"
+                    >
+                      <ChevronRight />
+                      <span>View all collections</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
               </SidebarGroupContent>
             </CollapsibleContent>
           </SidebarGroup>
         </Collapsible>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" tooltip={currentUser.name}>
-              <Avatar>
-                {currentUser.image && (
-                  <AvatarImage src={currentUser.image} alt={currentUser.name} />
-                )}
-                <AvatarFallback>{getInitials(currentUser.name)}</AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 leading-tight">
-                <span className="truncate font-medium">{currentUser.name}</span>
-                <span className="truncate text-xs text-muted-foreground">
-                  {currentUser.email}
-                </span>
-              </div>
-              <Settings className="text-muted-foreground" />
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+      {user && (
+        <SidebarFooter className="border-t border-sidebar-border">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton size="lg" tooltip={displayName}>
+                <Avatar>
+                  {user.image && (
+                    <AvatarImage src={user.image} alt={displayName} />
+                  )}
+                  <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 leading-tight">
+                  <span className="truncate font-medium">{displayName}</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {user.email}
+                  </span>
+                </div>
+                <Settings className="text-muted-foreground" />
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      )}
     </Sidebar>
   );
 }

@@ -3,13 +3,12 @@ import Link from "next/link";
 import { Star } from "lucide-react";
 
 import { TypeIconBadge } from "@/components/dashboard/TypeIconBadge";
+import { NEUTRAL_TYPE_COLOR } from "@/lib/item-type-icons";
 import type { CollectionSummary } from "@/types/collection";
 
 interface CollectionCardProps {
   collection: CollectionSummary;
 }
-
-const NEUTRAL_COLOR = "#6b7280";
 
 export function CollectionCard({ collection }: CollectionCardProps) {
   const { accentType, types, itemCount } = collection;
@@ -17,7 +16,9 @@ export function CollectionCard({ collection }: CollectionCardProps) {
   return (
     <Link
       href={`/collections/${collection.id}`}
-      style={{ "--type-color": accentType?.color ?? NEUTRAL_COLOR } as CSSProperties}
+      style={
+        { "--type-color": accentType?.color ?? NEUTRAL_TYPE_COLOR } as CSSProperties
+      }
       className="group flex flex-col gap-3 rounded-xl border border-l-2 border-l-(color:--type-color) bg-card bg-linear-to-br from-(color:--type-color)/10 to-card p-4 transition-colors hover:border-foreground/20 hover:border-l-(color:--type-color)"
     >
       <div className="flex flex-col gap-1">

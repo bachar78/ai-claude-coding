@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import type { CollectionStats, CollectionSummary } from "@/types/collection";
@@ -11,17 +13,22 @@ interface TypeTallyRow {
   count: number;
 }
 
-/** System types plus the user's own custom ones, keyed by id. */
-async function getItemTypesById(
-  userId: string
-): Promise<Map<string, ItemTypeRow>> {
-  const types = await prisma.itemType.findMany({
-    where: { OR: [{ userId: null }, { userId }] },
-    select: { id: true, name: true, icon: true, color: true, sortOrder: true },
-  });
+/**
+ * System types plus the user's own custom ones, keyed by id.
+ *
+ * Cached for the request: the sidebar builds two lists of collections and they
+ * share one lookup.
+ */
+const getItemTypesById = cache(
+  async (userId: string): Promise<Map<string, ItemTypeRow>> => {
+    const types = await prisma.itemType.findMany({
+      where: { OR: [{ userId: null }, { userId }] },
+      select: { id: true, name: true, icon: true, color: true, sortOrder: true },
+    });
 
-  return new Map(types.map((type) => [type.id, type]));
-}
+    return new Map(types.map((type) => [type.id, type]));
+  }
+);
 
 /**
  * Item-type tallies for every given collection in one query (§6.6).
@@ -65,25 +72,25 @@ function groupByCollection(tallies: TypeTallyRow[]): Map<string, TypeTallyRow[]>
   return grouped;
 }
 
-/** The user's most recently updated collections, newest first. */
-export async function getRecentCollections(
-  userId: string,
-  limit: number
-): Promise<CollectionSummary[]> {
-  const collections = await prisma.collection.findMany({
-    where: { userId },
-    orderBy: { updatedAt: "desc" },
-    take: limit,
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      isFavorite: true,
-      defaultTypeId: true,
-      updatedAt: true,
-    },
-  });
+/** Everything a collection card or sidebar row renders. */
+const CARD_SELECT = {
+  id: true,
+  name: true,
+  description: true,
+  isFavorite: true,
+  defaultTypeId: true,
+  updatedAt: true,
+} satisfies Prisma.CollectionSelect;
 
+type CollectionRow = Prisma.CollectionGetPayload<{
+  select: typeof CARD_SELECT;
+}>;
+
+/** Attaches the type tallies — the dot color, the badges and the item count. */
+async function toSummaries(
+  userId: string,
+  collections: CollectionRow[]
+): Promise<CollectionSummary[]> {
   if (collections.length === 0) return [];
 
   const [typesById, tallies] = await Promise.all([
@@ -109,6 +116,34 @@ export async function getRecentCollections(
       accentType: types[0] ?? defaultType,
     };
   });
+}
+
+/** The user's most recently updated collections, newest first. */
+export async function getRecentCollections(
+  userId: string,
+  limit: number
+): Promise<CollectionSummary[]> {
+  const collections = await prisma.collection.findMany({
+    where: { userId },
+    orderBy: { updatedAt: "desc" },
+    take: limit,
+    select: CARD_SELECT,
+  });
+
+  return toSummaries(userId, collections);
+}
+
+/** The user's favorite collections, most recently updated first. */
+export async function getFavoriteCollections(
+  userId: string
+): Promise<CollectionSummary[]> {
+  const collections = await prisma.collection.findMany({
+    where: { userId, isFavorite: true },
+    orderBy: { updatedAt: "desc" },
+    select: CARD_SELECT,
+  });
+
+  return toSummaries(userId, collections);
 }
 
 export async function getCollectionStats(

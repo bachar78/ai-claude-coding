@@ -5,3 +5,10 @@ export interface ItemTypeBadge {
   icon: string;
   color: string;
 }
+
+/** An item type as the sidebar lists it: a link, a lock and a count. */
+export interface ItemTypeSummary extends ItemTypeBadge {
+  slug: string;
+  isProOnly: boolean;
+  itemCount: number;
+}
