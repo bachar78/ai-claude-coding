@@ -2,7 +2,7 @@ import { createElement, type CSSProperties } from "react";
 
 import { getItemTypeIcon } from "@/lib/item-type-icons";
 import { cn } from "@/lib/utils";
-import type { ItemTypeBadge } from "@/types/collection";
+import type { ItemTypeBadge } from "@/types/item-type";
 
 interface TypeIconBadgeProps {
   type: ItemTypeBadge;

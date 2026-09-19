@@ -8,28 +8,41 @@ import {
   getCollectionStats,
   getRecentCollections,
 } from "@/lib/db/collections";
+import {
+  getItemStats,
+  getPinnedItems,
+  getRecentItems,
+} from "@/lib/db/items";
 import { getCurrentUserId } from "@/lib/db/user";
-import { items } from "@/lib/mock-data";
 
 const RECENT_COLLECTIONS_LIMIT = 8;
+const PINNED_ITEMS_LIMIT = 6;
 const RECENT_ITEMS_LIMIT = 10;
 
-const NO_COLLECTIONS = { total: 0, favorites: 0 };
+const NO_COUNTS = { total: 0, favorites: 0 };
 
 export default async function DashboardPage() {
-  // Items are still mock data — they move to the database in a later pass.
   const userId = await getCurrentUserId();
-  const [recentCollections, collectionStats] = await Promise.all([
+  const [
+    recentCollections,
+    collectionStats,
+    pinnedItems,
+    recentItems,
+    itemStats,
+  ] = await Promise.all([
     userId ? getRecentCollections(userId, RECENT_COLLECTIONS_LIMIT) : [],
-    userId ? getCollectionStats(userId) : NO_COLLECTIONS,
+    userId ? getCollectionStats(userId) : NO_COUNTS,
+    userId ? getPinnedItems(userId, PINNED_ITEMS_LIMIT) : [],
+    userId ? getRecentItems(userId, RECENT_ITEMS_LIMIT) : [],
+    userId ? getItemStats(userId) : NO_COUNTS,
   ]);
 
   const stats: Stat[] = [
-    { label: "Items", value: items.length, icon: Boxes },
+    { label: "Items", value: itemStats.total, icon: Boxes },
     { label: "Collections", value: collectionStats.total, icon: FolderOpen },
     {
       label: "Favorite items",
-      value: items.filter((item) => item.isFavorite).length,
+      value: itemStats.favorites,
       icon: Star,
     },
     {
@@ -38,11 +51,6 @@ export default async function DashboardPage() {
       icon: FolderHeart,
     },
   ];
-
-  const pinnedItems = items.filter((item) => item.isPinned);
-  const recentItems = [...items]
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
-    .slice(0, RECENT_ITEMS_LIMIT);
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-8">
@@ -72,7 +80,6 @@ export default async function DashboardPage() {
         title="Pinned"
         count={pinnedItems.length}
         viewAllHref="/items"
-        emptyMessage="Pin items to keep them at the top."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {pinnedItems.map((item) => (
@@ -82,7 +89,7 @@ export default async function DashboardPage() {
       </DashboardSection>
 
       <DashboardSection
-        title="Items"
+        title="Recent items"
         count={recentItems.length}
         viewAllHref="/items"
         emptyMessage="No items yet."

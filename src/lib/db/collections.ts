@@ -1,10 +1,7 @@
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
-import type {
-  CollectionStats,
-  CollectionSummary,
-  ItemTypeBadge,
-} from "@/types/collection";
+import type { CollectionStats, CollectionSummary } from "@/types/collection";
+import type { ItemTypeBadge } from "@/types/item-type";
 
 type ItemTypeRow = ItemTypeBadge & { sortOrder: number };
 
