@@ -4,15 +4,29 @@ import { CollectionCard } from "@/components/dashboard/CollectionCard";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
 import { ItemCard } from "@/components/dashboard/ItemCard";
 import { StatsCards, type Stat } from "@/components/dashboard/StatsCards";
-import { collections, items } from "@/lib/mock-data";
+import {
+  getCollectionStats,
+  getRecentCollections,
+} from "@/lib/db/collections";
+import { getCurrentUserId } from "@/lib/db/user";
+import { items } from "@/lib/mock-data";
 
 const RECENT_COLLECTIONS_LIMIT = 8;
 const RECENT_ITEMS_LIMIT = 10;
 
-export default function DashboardPage() {
+const NO_COLLECTIONS = { total: 0, favorites: 0 };
+
+export default async function DashboardPage() {
+  // Items are still mock data — they move to the database in a later pass.
+  const userId = await getCurrentUserId();
+  const [recentCollections, collectionStats] = await Promise.all([
+    userId ? getRecentCollections(userId, RECENT_COLLECTIONS_LIMIT) : [],
+    userId ? getCollectionStats(userId) : NO_COLLECTIONS,
+  ]);
+
   const stats: Stat[] = [
     { label: "Items", value: items.length, icon: Boxes },
-    { label: "Collections", value: collections.length, icon: FolderOpen },
+    { label: "Collections", value: collectionStats.total, icon: FolderOpen },
     {
       label: "Favorite items",
       value: items.filter((item) => item.isFavorite).length,
@@ -20,14 +34,11 @@ export default function DashboardPage() {
     },
     {
       label: "Favorite collections",
-      value: collections.filter((collection) => collection.isFavorite).length,
+      value: collectionStats.favorites,
       icon: FolderHeart,
     },
   ];
 
-  const recentCollections = [...collections]
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
-    .slice(0, RECENT_COLLECTIONS_LIMIT);
   const pinnedItems = items.filter((item) => item.isPinned);
   const recentItems = [...items]
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
@@ -45,7 +56,7 @@ export default function DashboardPage() {
       <StatsCards stats={stats} />
 
       <DashboardSection
-        title="Recent collections"
+        title="Collections"
         count={recentCollections.length}
         viewAllHref="/collections"
         emptyMessage="No collections yet."
@@ -71,7 +82,7 @@ export default function DashboardPage() {
       </DashboardSection>
 
       <DashboardSection
-        title="Recent items"
+        title="Items"
         count={recentItems.length}
         viewAllHref="/items"
         emptyMessage="No items yet."
