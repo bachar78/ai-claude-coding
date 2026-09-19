@@ -1,11 +1,11 @@
 import { createElement, type CSSProperties } from "react";
 
 import { getItemTypeIcon } from "@/lib/item-type-icons";
-import type { MockItemType } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import type { ItemTypeBadge } from "@/types/collection";
 
 interface TypeIconBadgeProps {
-  type: MockItemType;
+  type: ItemTypeBadge;
   className?: string;
 }
 

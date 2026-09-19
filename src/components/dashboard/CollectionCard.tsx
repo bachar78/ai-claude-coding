@@ -3,25 +3,16 @@ import Link from "next/link";
 import { Star } from "lucide-react";
 
 import { TypeIconBadge } from "@/components/dashboard/TypeIconBadge";
-import {
-  getItemTypeById,
-  type MockCollection,
-  type MockItemType,
-} from "@/lib/mock-data";
+import type { CollectionSummary } from "@/types/collection";
 
 interface CollectionCardProps {
-  collection: MockCollection;
+  collection: CollectionSummary;
 }
 
 const NEUTRAL_COLOR = "#6b7280";
 
 export function CollectionCard({ collection }: CollectionCardProps) {
-  const types = collection.itemTypeIds
-    .map(getItemTypeById)
-    .filter((type): type is MockItemType => type !== undefined);
-  const accentType = collection.defaultTypeId
-    ? getItemTypeById(collection.defaultTypeId)
-    : types[0];
+  const { accentType, types, itemCount } = collection;
 
   return (
     <Link
@@ -36,9 +27,11 @@ export function CollectionCard({ collection }: CollectionCardProps) {
             <Star className="size-4 shrink-0 fill-yellow-400 text-yellow-400" />
           )}
         </div>
-        <p className="line-clamp-2 text-sm text-muted-foreground">
-          {collection.description}
-        </p>
+        {collection.description && (
+          <p className="line-clamp-2 text-sm text-muted-foreground">
+            {collection.description}
+          </p>
+        )}
       </div>
       <div className="mt-auto flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
@@ -47,7 +40,7 @@ export function CollectionCard({ collection }: CollectionCardProps) {
           ))}
         </div>
         <span className="text-xs text-muted-foreground">
-          {collection.itemCount} items
+          {itemCount} {itemCount === 1 ? "item" : "items"}
         </span>
       </div>
     </Link>
