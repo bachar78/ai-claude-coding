@@ -1,9 +1,10 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
-import { ChevronRight, Lock, Settings, Star, Zap } from "lucide-react";
+import { ChevronRight, Settings, Star, Zap } from "lucide-react";
 
 import { SidebarCollapseButton } from "@/components/dashboard/SidebarCollapseButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   Collapsible,
   CollapsibleContent,
@@ -44,6 +45,18 @@ function CollectionDot({ color }: { color: string }) {
         className="size-2 rounded-full bg-(color:--type-color)"
       />
     </span>
+  );
+}
+
+/** Marks an item type that the user's plan does not include. */
+function ProBadge() {
+  return (
+    <Badge
+      variant="outline"
+      className="h-4 px-1.5 text-[0.625rem] tracking-wider text-muted-foreground"
+    >
+      PRO
+    </Badge>
   );
 }
 
@@ -136,8 +149,10 @@ export async function AppSidebar() {
                       <Icon color={type.color} />
                       <span>{type.name}</span>
                     </SidebarMenuButton>
-                    <SidebarMenuBadge className="text-muted-foreground">
-                      {isLocked ? <Lock className="size-3.5" /> : type.itemCount}
+                    <SidebarMenuBadge
+                      className={isLocked ? "px-0" : "text-muted-foreground"}
+                    >
+                      {isLocked ? <ProBadge /> : type.itemCount}
                     </SidebarMenuBadge>
                   </SidebarMenuItem>
                 );
