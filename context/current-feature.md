@@ -2,41 +2,36 @@
 
 <!-- Feature Name and short description-->
 
-**Stats & Sidebar** - Move the sidebar off `src/lib/mock-data.ts`: item types with their icons and real item counts, and the user's real collections, with a colored dot per recent collection and a "View all collections" link. The main-area stats already come from the database.
+**Add Pro Badge to Sidebar** - Show a clean, subtle uppercase "PRO" badge on the Pro-only item types (File and Image) in the sidebar, using the shadcn `Badge` component.
 
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
 
-Completed
+In Progress
 
 ## Goals
 
 <!-- Goals & requirements -->
 
-- Add the item-type query the sidebar needs: the system types plus the user's own, in `sortOrder`, each with its item count for the badge — one `groupBy` for every type, not a count per row.
-- Add the collection queries the sidebar needs: the user's favorite collections, and the 5 most recent (`RECENT_COLLECTIONS_LIMIT` in `AppSidebar`).
-- Make `AppSidebar` an `async` server component fetching directly through the `src/lib/db/user.ts` helper — no API route, no client fetching. It sits in `src/app/dashboard/layout.tsx`, which is already `async`.
-- Render each item type with its own icon and color, linking to `/items/[slug]`, keeping the lock badge in place of the count for Pro-only types.
-- Keep the star for favorite collections; give each *recent* collection a colored dot driven by the item type it holds most of, replacing the `Folder` icon tinted by `defaultTypeId`.
-- Add a "View all collections" link to `/collections` under the collections list.
-- Keep the stats cards as they are — Items, Collections, Favorite items and Favorite collections already read from the database.
+- Render a "PRO" badge on the Pro-only item types in the sidebar's Types list (`File` and `Image`, the ones with `isProOnly`).
+- Use the shadcn `Badge` component from `src/components/ui/badge.tsx`.
+- Keep it clean and subtle — small, low-contrast, not competing with the type name or the item counts.
+- Label text is all uppercase: `PRO`.
 - Verify in the browser against the seeded demo data, then `npm run build` and `npx tsc --noEmit`.
 
 ## Notes
 
 <!-- Any extra notes -->
 
-- Spec: `context/features/stats-sidebar-spec.md`
-- **Two spec requirements are already done.** The spec predates the Dashboard Items pass: "display stats from database data" and "create `src/lib/db/items.ts`" both landed in `4c3dd1e`. All four stats cards read from `getItemStats` / `getCollectionStats`, and `src/lib/db/items.ts` exists with `getPinnedItems`, `getRecentItems` and `getItemStats`. This pass adds to that file rather than creating it, and the stats cards should need no change — confirm in the browser instead of rewriting them.
-- **Follow the collections pass.** `src/lib/db/collections.ts` is the reference the spec names: user-scoped queries, a DB-shaped view type in `src/types/`, and no N+1. Match it.
-- **No auth yet.** Keep using `getCurrentUserId()` from `src/lib/db/user.ts` — still the single call site to swap for `auth()` at milestone 1.
-- **Reuse the dominant-type work.** `getRecentCollections(userId, limit)` already returns `accentType` (dominant → `defaultType` → null) and `itemCount`, which is exactly what the recent list's dot and badge need. Prefer reusing it over a second tally; favorites need a sibling query in the same shape.
-- **Types.** `ItemTypeBadge` (`src/types/item-type.ts`) carries only `id`, `name`, `icon` and `color`. The sidebar also needs `slug` for the link and `isProOnly` for the lock, so it needs a wider type — extend that file rather than starting a third one.
-- **Avoid the N+1 on type counts.** `countItemsByType` currently filters the mock array per type. The DB version is one `groupBy` on `Item` by `itemTypeId` for the whole user, mapped in memory — not a `count` per type.
-- **The Pro lock needs the user's plan.** `isProOnly && currentUser.plan === "FREE"` reads `currentUser` from mock data. Decide before implementing: widen the `src/lib/db/user.ts` helper to return the plan (and, optionally, name/email/image for the footer avatar), or leave the footer on mock data for now. The seeded demo user is `FREE`, so the two Pro types stay locked either way.
-- **`/items/[slug]` and `/collections` do not exist yet** — only `/`, `/dashboard` and `/_not-found` are routed. The links are correct per §7.1 and will 404 until those pages land; that is expected, not a bug to fix here.
-- **Mock data is nearly dead.** After this pass `src/lib/mock-data.ts` is only reachable through the sidebar footer's `currentUser` (if it stays), plus `getItemTypeById`, already unused. Do not delete the file in this pass without asking — `useDebounce` also lives there and belongs somewhere else.
+- Spec: `context/features/add-pro-badge-side.md`
+- **Where it goes.** `src/components/dashboard/AppSidebar.tsx`, the Types `SidebarMenu` (~line 126). Each type already computes `isLocked = type.isProOnly && !isPro`, and the `SidebarMenuBadge` slot currently renders `<Lock className="size-3.5" />` in place of `type.itemCount` for locked types.
+- **Decide: badge vs. lock.** The lock icon and a "PRO" badge occupy the same `SidebarMenuBadge` slot. Pick one before implementing — most likely the badge replaces the lock icon, since both say the same thing and stacking them is noisy. Confirm which the user wants rather than showing both.
+- **`Badge` is already installed** — `src/components/ui/badge.tsx` exists with `default`, `secondary`, `destructive`, `outline`, `ghost` and `link` variants. `secondary` or `outline` is the subtle choice; no `npx shadcn add` needed.
+- **Badge sizing.** The base badge is `h-5 … text-xs px-2`. In the sidebar row that will read large next to the 12px item counts — expect to shrink it (smaller text, tighter padding, `h-4`) to match the count badges' weight.
+- **Collapsed sidebar.** In icon mode `SidebarMenuBadge` is hidden by the sidebar's own `group-data-[collapsible=icon]:hidden`, so the badge disappears with the counts. Nothing extra needed, but check it looks right collapsed.
+- **Plan comes from the database.** `isPro` is `user?.plan === "PRO"` via `getCurrentUser()`. The seeded demo user is `FREE`, so both Pro types show the badge.
+- **Scope.** Sidebar only. The dashboard main area and the `/items/[slug]` pages (not routed yet) are out of scope for this pass.
 
 ## History
 
