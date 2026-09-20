@@ -1,5 +1,5 @@
 ---
-name: codebase-auditor
+name: code-scanner
 description: Use PROACTIVELY when asked to audit, review or scan the DevStash codebase for security issues, performance problems (N+1 queries, re-renders), code quality, or files/components that should be split up. Read-only — it reports findings grouped by severity with file paths, line numbers and suggested fixes, and never edits code. Use it for whole-codebase or whole-area sweeps; use /code-review instead for reviewing a specific diff or PR.
 tools: Read, Grep, Glob, Bash
 model: inherit
