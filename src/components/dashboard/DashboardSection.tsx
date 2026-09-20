@@ -6,7 +6,10 @@ import { Badge } from "@/components/ui/badge";
 
 interface DashboardSectionProps {
   title: string;
+  /** Rows rendered in this section. Drives the empty and hidden states. */
   count: number;
+  /** Total across the whole collection, when the section only shows a page of it. Defaults to `count`. */
+  total?: number;
   viewAllHref: string;
   /** Omit to hide the whole section while it is empty. */
   emptyMessage?: string;
@@ -16,6 +19,7 @@ interface DashboardSectionProps {
 export function DashboardSection({
   title,
   count,
+  total,
   viewAllHref,
   emptyMessage,
   children,
@@ -28,7 +32,7 @@ export function DashboardSection({
         <div className="flex items-center gap-2">
           <h2 className="font-semibold">{title}</h2>
           <Badge variant="secondary" className="text-muted-foreground">
-            {count}
+            {total ?? count}
           </Badge>
         </div>
         <Link

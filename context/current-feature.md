@@ -2,19 +2,47 @@
 
 <!-- Feature Name and short description-->
 
+**Truthful Section Counts** — the count badge on each dashboard section currently shows the page size rather than the real total, so it contradicts the stats cards on the same screen. Display-only fix; no data-layer or query change.
+
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
 
-Not Started
+In Progress
 
 ## Goals
 
 <!-- Goals & requirements -->
 
+### The problem
+
+`src/app/dashboard/page.tsx:93` passes `count={recentItems.length}` to `DashboardSection` — that is `RECENT_ITEMS_LIMIT`, not the total. Against the seeded data the "Items" stats card reads **18** while the "Recent items" badge two sections below reads **10**. Line 68 has the same problem for collections, where `collectionStats.total` is already fetched and unused for that purpose.
+
+### Why it is not a one-liner
+
+`count` in `DashboardSection` does double duty: it labels the badge (line 31) *and* drives the empty/hidden branch at `DashboardSection.tsx:23`, where `count === 0 && !emptyMessage` is what makes the Pinned section disappear rather than show an empty state. Passing a total straight through would break that — a section with 0 rendered rows but a non-zero total would render an empty grid.
+
+### The change
+
+Add an **optional** `total` prop to `DashboardSection`, used for the badge only, falling back to `count` when absent. `count` keeps its current meaning (rows rendered) and keeps owning the empty/hidden logic untouched.
+
+- Collections → `total={collectionStats.total}`
+- Recent items → `total={itemStats.total}`
+- Pinned → unchanged. There is no pinned total in `getItemStats`, and adding one is out of scope; the badge keeps showing the rendered count, capped at `PINNED_ITEMS_LIMIT`.
+
+Both totals are already in the page's existing `Promise.all`, so this adds no queries.
+
 ## Notes
 
 <!-- Any extra notes -->
+
+Came out of the codebase audit (`codebase-auditor`, Low severity). The audit's other findings — the unbounded `getFavoriteCollections`, the duplicated item-type lookup, the `AppSidebar` split, the pinned-index migration, the raw-SQL `userId` scoping, `src/lib/mock-data.ts` being dead, the `DATABASE_URL` guard, `Stat` living in a component file, the `useIsMobile` allocation and the boilerplate README — are deliberately left for later passes.
+
+### Verification
+
+- `npx tsc --noEmit` and `npm run lint` (both pass clean today, so any new error is from this pass), then `npm run build`.
+- In the browser at `/dashboard`: the Collections badge reads 5 and Recent items reads 18, matching the stats cards, while still rendering 8 and 10 cards respectively.
+- Temporarily clear the pins and confirm the Pinned section still vanishes instead of showing an empty grid.
 
 
 ## History

@@ -66,6 +66,7 @@ export default async function DashboardPage() {
       <DashboardSection
         title="Collections"
         count={recentCollections.length}
+        total={collectionStats.total}
         viewAllHref="/collections"
         emptyMessage="No collections yet."
       >
@@ -91,6 +92,7 @@ export default async function DashboardPage() {
       <DashboardSection
         title="Recent items"
         count={recentItems.length}
+        total={itemStats.total}
         viewAllHref="/items"
         emptyMessage="No items yet."
       >
