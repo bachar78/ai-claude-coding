@@ -1,20 +1,58 @@
-# Current Feature
+# Current Feature: Auth Phase 1 — NextAuth + GitHub Provider
 
 <!-- Feature Name and short description-->
+
+Set up NextAuth v5 with the Prisma adapter and GitHub OAuth, using NextAuth's
+default sign-in page for testing. Spec: `context/features/auth-phase-1-spec.md`.
 
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
 
-Not Started
+In Progress
 
 ## Goals
 
 <!-- Goals & requirements -->
 
+- Install `next-auth@beta` (v5) and `@auth/prisma-adapter`
+- Set up the split auth config pattern for edge compatibility:
+  - `src/auth.config.ts` — edge-safe config, providers only, no adapter
+  - `src/auth.ts` — full config with the Prisma adapter and `session: { strategy: "jwt" }`
+- Add the GitHub OAuth provider
+- `src/app/api/auth/[...nextauth]/route.ts` — re-export the handlers from `src/auth.ts`
+- `src/proxy.ts` — protect `/dashboard/*` via the Next.js 16 proxy, redirecting
+  unauthenticated users to sign-in
+- `src/types/next-auth.d.ts` — extend the `Session` type with `user.id`
+
 ## Notes
 
 <!-- Any extra notes -->
+
+**Gotchas from the spec** (verify current conventions with Context7 before writing config):
+
+- `next-auth@beta`, never `@latest` — that still resolves to v4
+- The proxy file lives at `src/proxy.ts`, the same level as `app/`
+- Named export: `export const proxy = auth(...)`, not a default export
+- JWT strategy is required by the split config pattern (and later by the
+  credentials provider — see project-overview §11.1)
+- Do **not** set a custom `pages.signIn`; this phase uses NextAuth's default page
+
+**Env vars:** `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`, and a secret. The spec lists
+`BETTER_AUTH_SECRET`, which looks like a copy-paste from Better Auth — NextAuth v5
+reads `AUTH_SECRET`. Confirm before wiring it up; `.env.example` needs updating either way.
+
+**Existing code this touches:** `src/lib/db/user.ts` exports `getCurrentUser()` /
+`getCurrentUserId()`, which currently resolve the seeded demo user by email. That is the
+single documented call site to swap for `auth()` — but the swap is not in this phase's
+file list, so confirm whether Phase 1 stops at the redirect test or also rewires the
+dashboard's user resolution.
+
+**Testing:** visit `/dashboard` (redirect to sign-in) → sign in with GitHub → land back
+on `/dashboard`.
+
+**Follow-on specs already in the tree:** `context/features/auth-spec-files/auth-phase-2-spec.md`
+and `auth-phase-3-spec.md` (untracked).
 
 
 ## History

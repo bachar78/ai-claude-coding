@@ -44,3 +44,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
+
+# playwright-mcp session artifacts (snapshots, screenshots)
+.playwright-mcp/
+
+# local MCP server config (contains API keys)
+.mcp.json
