@@ -21,5 +21,22 @@ Read the following to get the full context of the project:
 
 There is no test framework set up yet.
 
+## Neon MCP
+
+Always operate on the `devstash` Neon project, `development` branch.
+
+- Project: `devstash` — `calm-dust-42770072`
+- Branch: `development` — `br-autumn-sunset-zak7vrmg` (use this for every query and migration)
+- Branch: `production` — `br-lucky-frog-zae9rq91` — **off limits**
+
+Pass `branch_id: "br-autumn-sunset-zak7vrmg"` explicitly on every Neon MCP call
+that accepts it. Omitting it targets the project's *default* branch, which is
+`production`.
+
+Never read from, write to, or otherwise touch the production branch unless I name
+it in that request. Permission applies to that request only — it does not carry
+over to later ones. The same goes for any other Neon project: if a request would
+reach outside `devstash`/`development`, stop and ask first.
+
 
 
